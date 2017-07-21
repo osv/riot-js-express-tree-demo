@@ -43,7 +43,11 @@ module.exports.update = function(req, res) {
         parentId: parentId || null
     };
     if (_id) {
-        Model.update({_id: _id}, company).then(handleOk(res, 201)).catch(handleError(res));
+        if (_id === parentId) {
+            handleError(res, 400)({error: '_id should not be equal to parentId'});
+        } else {
+            Model.update({_id: _id}, company).then(handleOk(res, 201)).catch(handleError(res));
+        }
     } else {
         handleError(res, 400)({error: '_id is required'});
     }
