@@ -52,7 +52,6 @@
      this.expandedItems = {}
      this.opts.companiesObs.on('next', (companies) => {
          this.companies = JSON.parse(JSON.stringify(companies))
-         console.log(companies);
          this.update();
      });
 
