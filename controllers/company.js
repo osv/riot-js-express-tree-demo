@@ -6,13 +6,13 @@ function handleError(res) {
     return function(err) {
         res.send(500, err);
         return Promise.reject(err);
-    }
+    };
 }
 
 function handleOk(res, status = 200) {
     return function(data) {
         return res.status(status).json(data);
-    }
+    };
 }
 
 module.exports.list = function(req, res) {
@@ -54,7 +54,7 @@ module.exports.update = function(req, res) {
 };
 
 module.exports.remove = function(req, res) {
-    // Cascade deletion - fet all items, making tree and than extract ids for deletion
+    // Cascade deletion - get all items, make tree and than extract ids for deletion
     Model.find({}, '_id', 'parentId')
         .then(toObject)
         .then(makeTree)
@@ -131,6 +131,6 @@ function populateChildEarnings(tree) {
     return tree.map((it) => {
         const childEarnings = populateChildEarnings(it.childrens) || 0;
         it.childEarnings = it.earnings + childEarnings;
-        return it.earnings + childEarnings;
+        return it.childEarnings;
     }).reduce(((sum, cur) => sum + cur), 0);
 }

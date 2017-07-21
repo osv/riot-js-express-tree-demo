@@ -5,7 +5,7 @@ Used here:
 - Mongoose
 - Express
 - RiotJs - SPA engine. `app.tag.html` hold app state.
-Used Observer passed via `opts` to trigger state change.
+Used "Observer" passed via `opts` to trigger state change.
 Triggered usually by "next" event.
 I think Rx will shine here much better.
 - Materializecss - Buggy material-like lib. Really painful and require JQuery :( but let it be here
@@ -16,9 +16,9 @@ I think Rx will shine here much better.
 
 Want to practice with express and riotjs. For this purpose I want to create app that can:
 
-- Create edit, delete companies.
+- Create, edit, delete companies.
 - Show companies tree
-- Fields: Names, estimated earnings
+- Fields: Name, estimated earnings, parent company
 - Show total earning per each company including childs:
 
 |                    |     |     |
