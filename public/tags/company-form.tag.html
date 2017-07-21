@@ -1,22 +1,22 @@
 <my-company-form>
     <form onsubmit={submit}>
         <div class="input-field">
-            <input ref="name" id="name" type="text" class="{invalid: errors.nameRequired, validate: true}">
+            <input ref="name" id="name" type="text"
+                   class="{invalid: errors.name}"
+                   onkeydown={ validate.bind(this, 'name') }>
             <label for="name">Company name</label>
         </div>
         <div class="input-field">
-            <input ref="earn" id="earn" type="number" class="{invalid: errors.earnRequired, validate: true}">
+            <input ref="earn" id="earn" type="number"
+                   class="{invalid: errors.earn}"
+                   onkeydown={ validate.bind(this, 'earn') }>
             <label for="earn">Company earnings</label>
         </div>
         <div class="input-field">
-            <select ref="parentCompany" name="parentCompanyName">
-                <option value="" selected>No parent company</option>
-                <option each="{item in companies}"
-                        value="{item._id}">
-                    {item.name}
-                </option>
-            </select>
-            <label>Parent company name</label>
+            <input type="text" ref="autocompleteParent" id="parentCompany" autocomplete="off"
+                   class={invalid: errors.autocompleteParent, autocomplete: true}
+                   onchange={ validate.bind(this, 'autocompleteParent') }>
+            <label for="parentCompany">Parent company name</label>
         </div>
         <button class="btn waves-effect waves-light" type="submit" name="action">
             {company._id ? 'Update' : 'Create'}
@@ -35,14 +35,30 @@
       *     companiesObs: Observer,
       *     companyObs: Observer
       * };*/
-     this.companies = [];
+
+     // lookup tables
+     this.companiesByName = {};
+     this.companiesNames = {};
+
+     // state
      this.errors = {}
      this.company = {}
 
+     const validatorsByRefName = {
+         autocompleteParent: () => {
+             const parentName = this.refs.autocompleteParent.value
+             return parentName && !this.companiesNames.hasOwnProperty(parentName)
+         },
+         name: () => !this.refs.name.value,
+         earn: () => isNaN(parseFloat(this.refs.earn.value))
+     }
+
      this.opts.companiesObs.on('next', (companiesTree) => {
-         this.companies = [];
+         this.companiesByName = {};
+         this.companiesNames = {};
          const traverse = (company) => {
-             this.companies.push(company);
+             this.companiesByName[company.name] = company._id
+             this.companiesNames[company.name] = null // used for autocomplete
              company.childrens.forEach(traverse)
          }
 
@@ -51,17 +67,25 @@
          this.update()
      })
 
+     this.on('mount', () => Materialize.updateTextFields())
+
      this.on('updated', () => {
          /* material specified sync code */
-         $(this.refs.parentCompany).material_select();
          Materialize.updateTextFields();
+
+         $(this.refs.autocompleteParent).autocomplete({
+             data: this.companiesNames,
+             limit: 20,
+             minLength: 1,
+         });
      })
 
      this.opts.companyObs.on('next', (company = {}) => {
          this.company = company;
          this.refs.name.value = company.name || ''
          this.refs.earn.value = company.earnings || ''
-         this.refs.parentCompany.value = company.parentId || ''
+         this.refs.autocompleteParent.value = getKeyByValue(this.companiesByName,
+                                                            company.parentId) || ''
          this.errors = {}
          this.update()
      });
@@ -72,22 +96,30 @@
 
      submit(e) {
          e.preventDefault()
-         const nameRequired = !this.refs.name.value,
-               earnRequired = isNaN(parseFloat(this.refs.earn.value))
+         const hasErrors = ['name', 'earn', 'autocompleteParent']
+             .map(this.validate)
+             .some((isError) => isError)
 
-         if (!(nameRequired || earnRequired)) {
+         if (!hasErrors) {
+             const parentName = this.refs.autocompleteParent.value
              this.opts.onSave({company: {
                  _id: this.company._id,
+                 parentId: this.companiesByName[parentName],
                  name: this.refs.name.value,
                  earnings: this.refs.earn.value,
-                 parentId: this.refs.parentCompany.value
              }})
          } else {
-             this.errors = {
-                 nameRequired: nameRequired,
-                 earnRequired: earnRequired
-             }
+             this.update()
          }
+     }
+
+     // Validate field set this.errors
+     validate(what) {
+         return this.errors[what] = validatorsByRefName[what]()
+     }
+
+     function getKeyByValue(object, value) {
+         return Object.keys(object).find(key => object[key] === value);
      }
     </script>
 </my-company-form>
