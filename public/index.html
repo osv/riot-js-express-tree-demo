@@ -38,15 +38,7 @@
         </script>
 
         <script>
-         riot.compile(function() {
-             riot.mount('my-app');
-         })
-
-         NProgress.configure({ trickleSpeed: 50, minimum: 0.4 });
-        </script>
-
-        <script>
-         // Make API request by axios start progressing
+         // Make API request by axios show progress
          let loads = 0
          function loaderStart() {
              ++loads
@@ -55,8 +47,10 @@
          }
          function loaderStop() {
              --loads
-             if (loads <=0)
+             if (loads <=0) {
                  NProgress.done()
+                 loads = 0
+             }
          }
 
          axios.interceptors.request.use(function (config) {
@@ -74,6 +68,13 @@
              loaderStop()
              return Promise.reject(error)
          });
+        </script>
+
+        <script>
+         riot.compile(function() {
+             riot.mount('my-app');
+         })
+         NProgress.configure({ trickleSpeed: 50, minimum: 0.4 });
         </script>
 
         <style type="text/css" media="screen">

@@ -1,10 +1,28 @@
-Express, RiotJs(used "Observable" pattern)
+# RiotJs Tree Demon
 
-- Create edit delate companies.
+Used here:
+
+- Mongoose
+- Express
+- RiotJs - SPA engine. `app.tag.html` hold app state.
+Used Observer passed via `opts` to trigger state change.
+Triggered usually by "next" event.
+I think Rx will shine here much better.
+- Materializecss - Buggy material-like lib. Really painful and require JQuery :( but let it be here
+- Nprogress - youtube like progress bar
+- Axios - funny http request lib
+
+## Motivation
+
+Want to practice with express and riotjs. For this purpose I want to create app that can:
+
+- Create edit, delete companies.
 - Show companies tree
 - Fields: Names, estimated earnings
 - Show total earning per each company including childs:
 
+|                    |     |     |
+|--------------------|-----|-----|
 | `Company 1`        | 10k | 35k |
 | `- Company 1_1`    | 5k  | 10k |
 | `-- Company 1_1_1` | 5k  |     |
@@ -14,9 +32,11 @@ Express, RiotJs(used "Observable" pattern)
 - Companies is not limited
 - No pagination
 
-## Run demo
+## Run
 
 ```bash
+## Use node 7, need async/await facilities for init db script
+# nvm use 7
 # Install npm dependencies
 npm run install
 # Start mongo instance. For example using docker:
@@ -28,3 +48,5 @@ npm run init-db
 # Start app and go to http://localhost:3000
 npm run start
 ```
+
+![Screenshot](screenshot.jpg)
