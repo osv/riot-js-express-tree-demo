@@ -1,0 +1,93 @@
+<my-company-form>
+    <form onsubmit={submit}>
+        <div class="input-field">
+            <input ref="name" id="name" type="text" class="{invalid: errors.nameRequired, validate: true}">
+            <label for="name">Company name</label>
+        </div>
+        <div class="input-field">
+            <input ref="earn" id="earn" type="number" class="{invalid: errors.earnRequired, validate: true}">
+            <label for="earn">Company earnings</label>
+        </div>
+        <div class="input-field">
+            <select ref="parentCompany" name="parentCompanyName">
+                <option value="" selected>No parent company</option>
+                <option each="{item in companies}"
+                        value="{item._id}">
+                    {item.name}
+                </option>
+            </select>
+            <label>Parent company name</label>
+        </div>
+        <button class="btn waves-effect waves-light" type="submit" name="action">
+            {company._id ? 'Update' : 'Create'}
+        </button>
+
+        <button click={ resetForm } class="btn waves-effect waves-light" type="button" name="action">
+            {company._id ? 'Cancel' : 'Reset'}
+        </button>
+
+    </form>
+
+    <script>
+     /* interface of this.opts:
+      * {
+      *     onSave: Function,
+      *     companiesObs: Observer,
+      *     companyObs: Observer
+      * };*/
+     this.companies = [];
+     this.errors = {}
+     this.company = {}
+
+     this.opts.companiesObs.on('next', (companiesTree) => {
+         this.companies = [];
+         const traverse = (company) => {
+             this.companies.push(company);
+             company.childrens.forEach(traverse)
+         }
+
+         companiesTree.forEach(traverse);
+
+         this.update()
+     })
+
+     this.on('updated', () => {
+         /* material specified sync code */
+         $(this.refs.parentCompany).material_select();
+         Materialize.updateTextFields();
+     })
+
+     this.opts.companyObs.on('next', (company = {}) => {
+         this.company = company;
+         this.refs.name.value = company.name || ''
+         this.refs.earn.value = company.earnings || ''
+         this.refs.parentCompany.value = company.parentId || ''
+         this.errors = {}
+         this.update()
+     });
+
+     resetForm() {
+         this.opts.companyObs.trigger('next', {});
+     }
+
+     submit(e) {
+         e.preventDefault()
+         const nameRequired = !this.refs.name.value,
+               earnRequired = isNaN(parseFloat(this.refs.earn.value))
+
+         if (!(nameRequired || earnRequired)) {
+             this.opts.onSave({company: {
+                 _id: this.company._id,
+                 name: this.refs.name.value,
+                 earnings: this.refs.earn.value,
+                 parentId: this.refs.parentCompany.value
+             }})
+         } else {
+             this.errors = {
+                 nameRequired: nameRequired,
+                 earnRequired: earnRequired
+             }
+         }
+     }
+    </script>
+</my-company-form>
